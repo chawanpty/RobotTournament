@@ -29,7 +29,6 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     return Scaffold(
       appBar: AppBar(title: Text("ข้อมูลทีม: ${widget.team.teamName}")),
       body: SingleChildScrollView(
-        // ✅ ป้องกันปุ่มหาย
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Consumer<TeamProvider>(
@@ -38,6 +37,9 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                 (t) => t.keyID == widget.team.keyID,
                 orElse: () => widget.team,
               );
+
+              bool isFinalized =
+                  updatedTeam.status == "จบการแข่งขัน"; // ✅ ตรวจสอบสถานะทีม
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,68 +65,64 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  // ✅ ช่องกรอกคะแนน
-                  TextFormField(
-                    controller: _scoreController,
-                    decoration: const InputDecoration(labelText: "คะแนนทีม"),
-                    keyboardType: TextInputType.number,
-                  ),
+                  // ✅ หากสถานะเป็น "กำลังแข่งขัน" ให้กรอกคะแนนและเลือกอันดับได้
+                  if (!isFinalized) ...[
+                    TextFormField(
+                      controller: _scoreController,
+                      decoration: const InputDecoration(labelText: "คะแนนทีม"),
+                      keyboardType: TextInputType.number,
+                    ),
+                    DropdownButtonFormField<String>(
+                      value: selectedRank,
+                      decoration:
+                          const InputDecoration(labelText: "จัดอันดับทีม"),
+                      items: ["1", "2", "3", "ไม่ติดอันดับ"].map((rank) {
+                        return DropdownMenuItem<String>(
+                          value: rank,
+                          child: Text("อันดับ: $rank"),
+                        );
+                      }).toList(),
+                      onChanged: (String? newRank) {
+                        setState(() {
+                          selectedRank = newRank;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
 
-                  // ✅ Dropdown เลือกอันดับ
-                  DropdownButtonFormField<String>(
-                    value: selectedRank,
-                    decoration:
-                        const InputDecoration(labelText: "จัดอันดับทีม"),
-                    items: ["1", "2", "3", "ไม่ติดอันดับ"].map((rank) {
-                      return DropdownMenuItem<String>(
-                        value: rank,
-                        child: Text("อันดับ: $rank"),
-                      );
-                    }).toList(),
-                    onChanged: (String? newRank) {
-                      setState(() {
-                        selectedRank = newRank;
-                      });
-                    },
-                  ),
+                    // ✅ ปุ่มบันทึกข้อมูล (เฉพาะทีมที่ยังแข่งขันอยู่)
+                    ElevatedButton(
+                      onPressed: () {
+                        _showConfirmSaveDialog(context, updatedTeam);
+                      },
+                      child: const Text("บันทึกข้อมูล"),
+                    ),
+                  ],
 
                   const SizedBox(height: 20),
 
-                  // ✅ ปุ่มบันทึกข้อมูล
-                  ElevatedButton(
+                  // ✅ ปุ่มแก้ไข (เฉพาะทีมที่ยังแข่งขันอยู่)
+                  if (!isFinalized)
+                    IconButton(
+                      icon: const Icon(Icons.edit,
+                          color: Colors.yellow, size: 30),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditTeamScreen(team: updatedTeam),
+                          ),
+                        );
+                      },
+                    ),
+
+                  // ✅ ปุ่มลบ (ยังคงอยู่แม้สถานะเป็น "จบการแข่งขัน")
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red, size: 30),
                     onPressed: () {
-                      _showConfirmSaveDialog(context, updatedTeam);
+                      _showDeleteConfirmationDialog(context, updatedTeam);
                     },
-                    child: const Text("บันทึกข้อมูล"),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // ✅ ปุ่มแก้ไข และลบข้อมูล
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit,
-                            color: Colors.yellow, size: 30),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditTeamScreen(team: updatedTeam),
-                            ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete,
-                            color: Colors.red, size: 30),
-                        onPressed: () {
-                          _showDeleteConfirmationDialog(context, updatedTeam);
-                        },
-                      ),
-                    ],
                   ),
                 ],
               );
@@ -160,7 +158,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                         team.keyID!, newScore, selectedRank ?? "ไม่ติดอันดับ");
 
                 Navigator.pop(dialogContext);
-                Navigator.pop(context); // ✅ กลับไปหน้ารายชื่อทีม
+                Navigator.pop(context);
               },
             ),
           ],
@@ -169,7 +167,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ Pop-up ยืนยันลบ
+  // ✅ ฟังก์ชันแสดง Pop-up ยืนยันก่อนลบทีม
   void _showDeleteConfirmationDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
