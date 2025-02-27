@@ -5,107 +5,144 @@ import '../model/teamItem.dart';
 import 'editTeamScreen.dart';
 import 'dart:io';
 
-class TeamDetailScreen extends StatelessWidget {
+class TeamDetailScreen extends StatefulWidget {
   final TeamItem team;
   const TeamDetailScreen({super.key, required this.team});
 
   @override
+  State<TeamDetailScreen> createState() => _TeamDetailScreenState();
+}
+
+class _TeamDetailScreenState extends State<TeamDetailScreen> {
+  final _scoreController = TextEditingController();
+  String? selectedRank;
+
+  @override
+  void initState() {
+    super.initState();
+    _scoreController.text = widget.team.score.toString();
+    selectedRank = widget.team.rank != "กำลังแข่งขัน" ? widget.team.rank : null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("ข้อมูลทีม: ${team.teamName}")),
-      body: Consumer<TeamProvider>(
-        builder: (context, provider, child) {
-          final updatedTeam = provider.teams.firstWhere(
-            (t) => t.keyID == team.keyID,
-            orElse: () => team,
-          );
+      appBar: AppBar(title: Text("ข้อมูลทีม: ${widget.team.teamName}")),
+      body: SingleChildScrollView(
+        // ✅ ป้องกันปุ่มหาย
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Consumer<TeamProvider>(
+            builder: (context, provider, child) {
+              final updatedTeam = provider.teams.firstWhere(
+                (t) => t.keyID == widget.team.keyID,
+                orElse: () => widget.team,
+              );
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                updatedTeam.imagePath.isNotEmpty
-                    ? Image.file(File(updatedTeam.imagePath), height: 150)
-                    : const Text("ไม่มีรูปภาพ"),
-                const SizedBox(height: 10),
-                Text("ชื่อทีม: ${updatedTeam.teamName}",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("ชื่อหุ่นยนต์: ${updatedTeam.robotName}",
-                    style: const TextStyle(fontSize: 16)),
-                Text("ประเภท: ${updatedTeam.category}",
-                    style: const TextStyle(fontSize: 16)),
-                Text("สมาชิกทีม: ${updatedTeam.members.join(', ')}",
-                    style: const TextStyle(fontSize: 16)),
-                Text("สถานะ: ${updatedTeam.status}",
-                    style: const TextStyle(fontSize: 16, color: Colors.blue)),
-                Text(
-                    "วันที่แข่งขัน: ${updatedTeam.competitionDate ?? 'ยังไม่กำหนด'}",
-                    style: const TextStyle(fontSize: 16)),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  updatedTeam.imagePath.isNotEmpty
+                      ? Image.file(File(updatedTeam.imagePath), height: 150)
+                      : const Text("ไม่มีรูปภาพ"),
+                  const SizedBox(height: 10),
+                  Text("ชื่อทีม: ${updatedTeam.teamName}",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("ชื่อหุ่นยนต์: ${updatedTeam.robotName}",
+                      style: const TextStyle(fontSize: 16)),
+                  Text("ประเภท: ${updatedTeam.category}",
+                      style: const TextStyle(fontSize: 16)),
+                  Text("สมาชิกทีม: ${updatedTeam.members.join(', ')}",
+                      style: const TextStyle(fontSize: 16)),
+                  Text("สถานะ: ${updatedTeam.status}",
+                      style: const TextStyle(fontSize: 16, color: Colors.blue)),
+                  Text(
+                      "วันที่แข่งขัน: ${updatedTeam.competitionDate ?? 'ยังไม่กำหนด'}",
+                      style: const TextStyle(fontSize: 16)),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // ✅ ปุ่มให้คะแนน พร้อม Pop-up ยืนยัน
-                ElevatedButton(
-                  onPressed: () {
-                    _showConfirmScoreDialog(context, updatedTeam);
-                  },
-                  child: Text(
-                      "ให้คะแนนทีมนี้ (คะแนนปัจจุบัน: ${updatedTeam.score})"),
-                ),
+                  // ✅ ช่องกรอกคะแนน
+                  TextFormField(
+                    controller: _scoreController,
+                    decoration: const InputDecoration(labelText: "คะแนนทีม"),
+                    keyboardType: TextInputType.number,
+                  ),
 
-                // ✅ ปุ่มโหวตทีม พร้อม Pop-up ยืนยัน
-                ElevatedButton(
-                  onPressed: () {
-                    _showConfirmVoteDialog(context, updatedTeam);
-                  },
-                  child:
-                      Text("โหวตทีมนี้ (โหวตปัจจุบัน: ${updatedTeam.votes})"),
-                ),
+                  // ✅ Dropdown เลือกอันดับ
+                  DropdownButtonFormField<String>(
+                    value: selectedRank,
+                    decoration:
+                        const InputDecoration(labelText: "จัดอันดับทีม"),
+                    items: ["1", "2", "3", "ไม่ติดอันดับ"].map((rank) {
+                      return DropdownMenuItem<String>(
+                        value: rank,
+                        child: Text("อันดับ: $rank"),
+                      );
+                    }).toList(),
+                    onChanged: (String? newRank) {
+                      setState(() {
+                        selectedRank = newRank;
+                      });
+                    },
+                  ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit,
-                          color: Colors.yellow, size: 30),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EditTeamScreen(team: updatedTeam),
-                          ),
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon:
-                          const Icon(Icons.delete, color: Colors.red, size: 30),
-                      onPressed: () {
-                        _showDeleteConfirmationDialog(context, updatedTeam);
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
+                  // ✅ ปุ่มบันทึกข้อมูล
+                  ElevatedButton(
+                    onPressed: () {
+                      _showConfirmSaveDialog(context, updatedTeam);
+                    },
+                    child: const Text("บันทึกข้อมูล"),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ✅ ปุ่มแก้ไข และลบข้อมูล
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit,
+                            color: Colors.yellow, size: 30),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditTeamScreen(team: updatedTeam),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete,
+                            color: Colors.red, size: 30),
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(context, updatedTeam);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
-  void _showConfirmScoreDialog(BuildContext context, TeamItem team) {
+  // ✅ ฟังก์ชันแสดง Pop-up ยืนยันการบันทึก
+  void _showConfirmSaveDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("ยืนยันการให้คะแนน"),
-          content: const Text("คุณต้องการเพิ่มคะแนนให้ทีมนี้หรือไม่?"),
+          title: const Text("ยืนยันการบันทึก"),
+          content: const Text("คุณต้องการบันทึกข้อมูลนี้หรือไม่?"),
           actions: [
             TextButton(
               child: const Text("ยกเลิก"),
@@ -116,10 +153,14 @@ class TeamDetailScreen extends StatelessWidget {
             TextButton(
               child: const Text("ยืนยัน"),
               onPressed: () {
-                int newScore = team.score + 10;
+                int newScore =
+                    int.tryParse(_scoreController.text) ?? team.score;
                 Provider.of<TeamProvider>(context, listen: false)
-                    .updateScore(team.keyID!, newScore);
+                    .updateTeamData(
+                        team.keyID!, newScore, selectedRank ?? "ไม่ติดอันดับ");
+
                 Navigator.pop(dialogContext);
+                Navigator.pop(context); // ✅ กลับไปหน้ารายชื่อทีม
               },
             ),
           ],
@@ -128,34 +169,7 @@ class TeamDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showConfirmVoteDialog(BuildContext context, TeamItem team) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text("ยืนยันการโหวต"),
-          content: const Text("คุณต้องการโหวตให้ทีมนี้หรือไม่?"),
-          actions: [
-            TextButton(
-              child: const Text("ยกเลิก"),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-            ),
-            TextButton(
-              child: const Text("ยืนยัน"),
-              onPressed: () {
-                Provider.of<TeamProvider>(context, listen: false)
-                    .updateVotes(team.keyID!);
-                Navigator.pop(dialogContext);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+  // ✅ Pop-up ยืนยันลบ
   void _showDeleteConfirmationDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,

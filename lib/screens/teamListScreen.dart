@@ -16,7 +16,7 @@ class TeamListScreen extends StatefulWidget {
 class _TeamListScreenState extends State<TeamListScreen> {
   String searchQuery = "";
   String? selectedRank;
-  String? selectedSort = "คะแนนสูงสุด"; // ✅ เพิ่มตัวเลือกเริ่มต้น
+  String? selectedSort = "คะแนนสูงสุด"; // ✅ ค่าเริ่มต้น
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +51,13 @@ class _TeamListScreenState extends State<TeamListScreen> {
                 labelText: "กรองตามอันดับ",
                 border: OutlineInputBorder(),
               ),
-              items: ["1", "2", "3", "ไม่ติดอันดับ"]
-                  .map((rank) => DropdownMenuItem(
-                        value: rank,
-                        child: Text("อันดับ: $rank"),
-                      ))
-                  .toList(),
+              items:
+                  ["1", "2", "3", "ไม่ติดอันดับ", "กำลังแข่งขัน"].map((rank) {
+                return DropdownMenuItem<String>(
+                  value: rank,
+                  child: Text("อันดับ: $rank"),
+                );
+              }).toList(),
               onChanged: (value) {
                 setState(() {
                   selectedRank = value;
@@ -65,50 +66,16 @@ class _TeamListScreenState extends State<TeamListScreen> {
             ),
           ),
 
-          // 🔽 ตัวเลือกเรียงลำดับตามคะแนนหรือโหวต
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButtonFormField<String>(
-              value: selectedSort,
-              decoration: const InputDecoration(
-                labelText: "เรียงลำดับตาม",
-                border: OutlineInputBorder(),
-              ),
-              items: ["คะแนนสูงสุด", "โหวตสูงสุด"].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedSort = newValue!;
-                });
-              },
-            ),
-          ),
-
-          // 📋 รายชื่อทีมที่ผ่านการค้นหา / คัดกรอง / เรียงลำดับ
+          // 📋 รายชื่อทีม (แสดงทุกทีมที่จบการแข่งขันแล้ว)
           Expanded(
             child: Consumer<TeamProvider>(
               builder: (context, provider, child) {
-                List<TeamItem> teams = provider.teams
-                    .where((team) =>
-                        team.category == widget.category &&
-                        team.teamName.toLowerCase().contains(searchQuery) &&
-                        (selectedRank == null || team.rank == selectedRank))
-                    .toList();
-
-                // ✅ เรียงลำดับทีมตามคะแนนหรือโหวต
-                if (selectedSort == "คะแนนสูงสุด") {
-                  teams.sort((a, b) => b.score.compareTo(a.score));
-                } else if (selectedSort == "โหวตสูงสุด") {
-                  teams.sort((a, b) => b.votes.compareTo(a.votes));
-                }
-
-                if (teams.isEmpty) {
-                  return const Center(child: Text("ไม่มีทีมที่ตรงกับเงื่อนไข"));
-                }
+                List<TeamItem> teams = provider.teams.where((team) {
+                  if (selectedRank != null) {
+                    return team.rank == selectedRank;
+                  }
+                  return true; // ✅ แสดงทุกทีม ไม่กรองโดยค่าเริ่มต้น
+                }).toList();
 
                 return ListView.builder(
                   itemCount: teams.length,
@@ -116,13 +83,8 @@ class _TeamListScreenState extends State<TeamListScreen> {
                     final team = teams[index];
                     return ListTile(
                       title: Text("ทีม: ${team.teamName}"),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("อันดับ: ${team.rank}"),
-                          Text("คะแนน: ${team.score} | โหวต: ${team.votes}"),
-                        ],
-                      ),
+                      subtitle:
+                          Text("อันดับ: ${team.rank} | คะแนน: ${team.score}"),
                       trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         Navigator.push(
@@ -140,6 +102,8 @@ class _TeamListScreenState extends State<TeamListScreen> {
           ),
         ],
       ),
+
+      // ✅ ปุ่มเพิ่มข้อมูลกลับมา
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

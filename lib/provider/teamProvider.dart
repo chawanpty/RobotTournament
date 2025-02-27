@@ -45,40 +45,47 @@ class TeamProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateVotes(int teamID) async {
+  // ✅ ฟังก์ชันอัปเดตอันดับทีม
+  Future<void> updateTeamRanking(int teamID, String newRank) async {
     int index = _teams.indexWhere((team) => team.keyID == teamID);
     if (index != -1) {
-      _teams[index].votes += 1;
+      _teams[index] = TeamItem(
+        keyID: _teams[index].keyID,
+        teamName: _teams[index].teamName,
+        robotName: _teams[index].robotName,
+        category: _teams[index].category,
+        members: _teams[index].members,
+        competitionDate: _teams[index].competitionDate,
+        status: "จบการแข่งขัน", // ✅ เปลี่ยนสถานะอัตโนมัติ
+        rank: newRank, // ✅ อัปเดตอันดับ
+        imagePath: _teams[index].imagePath,
+        score: _teams[index].score,
+        votes: _teams[index].votes,
+      );
       await _db.updateTeam(_teams[index]);
       notifyListeners();
     }
   }
 
-  // ✅ ค้นหาทีมจากชื่อ
-  List<TeamItem> searchTeams(String query) {
-    return _teams
-        .where(
-            (team) => team.teamName.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-  }
-
-  // ✅ กรองทีมตามคะแนนสูงสุด หรือโหวตสูงสุด
-  List<TeamItem> filterTeams(String filterType) {
-    List<TeamItem> sortedTeams = List.from(_teams);
-    if (filterType == "คะแนนสูงสุด") {
-      sortedTeams.sort((a, b) => b.score.compareTo(a.score));
-    } else if (filterType == "โหวตสูงสุด") {
-      sortedTeams.sort((a, b) => b.votes.compareTo(a.votes));
+  // ✅ ฟังก์ชันอัปเดตคะแนนและอันดับพร้อมกัน
+  Future<void> updateTeamData(int teamID, int newScore, String newRank) async {
+    int index = _teams.indexWhere((team) => team.keyID == teamID);
+    if (index != -1) {
+      _teams[index] = TeamItem(
+        keyID: _teams[index].keyID,
+        teamName: _teams[index].teamName,
+        robotName: _teams[index].robotName,
+        category: _teams[index].category,
+        members: _teams[index].members,
+        competitionDate: _teams[index].competitionDate,
+        status: "จบการแข่งขัน", // ✅ เปลี่ยนสถานะอัตโนมัติ
+        rank: newRank, // ✅ อัปเดตอันดับ
+        imagePath: _teams[index].imagePath,
+        score: newScore, // ✅ อัปเดตคะแนนใหม่
+        votes: _teams[index].votes,
+      );
+      await _db.updateTeam(_teams[index]);
+      notifyListeners();
     }
-    return sortedTeams;
-  }
-
-  // ✅ รีเซ็ตคะแนนทั้งหมด
-  Future<void> resetScores() async {
-    for (var team in _teams) {
-      team.score = 0;
-      await _db.updateTeam(team);
-    }
-    notifyListeners();
   }
 }
