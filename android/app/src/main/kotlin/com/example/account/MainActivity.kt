@@ -1,4 +1,4 @@
-package com.example.account
+package com.example.RobotTournament
 
 import io.flutter.embedding.android.FlutterActivity
 
