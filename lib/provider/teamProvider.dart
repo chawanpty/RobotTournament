@@ -8,7 +8,6 @@ class TeamProvider with ChangeNotifier {
 
   List<TeamItem> get teams => _teams;
 
-  // ✅ โหลดทีมตามประเภท (ถ้ามี category)
   Future<void> loadTeams({String? category}) async {
     _teams = await _db.getTeams(category: category);
     notifyListeners();
@@ -45,45 +44,12 @@ class TeamProvider with ChangeNotifier {
     }
   }
 
-  // ✅ ฟังก์ชันอัปเดตอันดับทีม
-  Future<void> updateTeamRanking(int teamID, String newRank) async {
-    int index = _teams.indexWhere((team) => team.keyID == teamID);
-    if (index != -1) {
-      _teams[index] = TeamItem(
-        keyID: _teams[index].keyID,
-        teamName: _teams[index].teamName,
-        robotName: _teams[index].robotName,
-        category: _teams[index].category,
-        members: _teams[index].members,
-        competitionDate: _teams[index].competitionDate,
-        status: "จบการแข่งขัน", // ✅ เปลี่ยนสถานะอัตโนมัติ
-        rank: newRank, // ✅ อัปเดตอันดับ
-        imagePath: _teams[index].imagePath,
-        score: _teams[index].score,
-        votes: _teams[index].votes,
-      );
-      await _db.updateTeam(_teams[index]);
-      notifyListeners();
-    }
-  }
-
-  // ✅ ฟังก์ชันอัปเดตคะแนนและอันดับพร้อมกัน
   Future<void> updateTeamData(int teamID, int newScore, String newRank) async {
     int index = _teams.indexWhere((team) => team.keyID == teamID);
     if (index != -1) {
-      _teams[index] = TeamItem(
-        keyID: _teams[index].keyID,
-        teamName: _teams[index].teamName,
-        robotName: _teams[index].robotName,
-        category: _teams[index].category,
-        members: _teams[index].members,
-        competitionDate: _teams[index].competitionDate,
-        status: "จบการแข่งขัน", // ✅ เปลี่ยนสถานะอัตโนมัติ
-        rank: newRank, // ✅ อัปเดตอันดับ
-        imagePath: _teams[index].imagePath,
-        score: newScore, // ✅ อัปเดตคะแนนใหม่
-        votes: _teams[index].votes,
-      );
+      _teams[index].score = newScore;
+      _teams[index].rank = newRank;
+      _teams[index].status = "จบการแข่งขัน";
       await _db.updateTeam(_teams[index]);
       notifyListeners();
     }
