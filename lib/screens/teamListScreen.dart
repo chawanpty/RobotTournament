@@ -100,7 +100,6 @@ class _TeamListScreenState extends State<TeamListScreen> {
                                 team.status == "กำลังแข่งขัน")))
                     .toList();
 
-                // ✅ เรียงลำดับตามคะแนนจากมากไปน้อย
                 teams.sort((a, b) => b.score.compareTo(a.score));
 
                 return ListView.builder(
@@ -122,7 +121,23 @@ class _TeamListScreenState extends State<TeamListScreen> {
                             Text("สถานะ: ${team.status}"),
                           ],
                         ),
-                        trailing: const Icon(Icons.arrow_forward_ios),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.thumb_up,
+                                  color: Colors.green),
+                              onPressed: () {
+                                Provider.of<TeamProvider>(context,
+                                        listen: false)
+                                    .voteTeam(team.keyID!);
+                              },
+                            ),
+                            Text("${team.votes}"),
+                            const SizedBox(width: 10),
+                            const Icon(Icons.arrow_forward_ios),
+                          ],
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,

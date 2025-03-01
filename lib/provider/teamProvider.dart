@@ -54,4 +54,14 @@ class TeamProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ✅ ฟังก์ชันโหวตทีมที่ชื่นชอบ
+  Future<void> voteTeam(int teamID) async {
+    int index = _teams.indexWhere((team) => team.keyID == teamID);
+    if (index != -1) {
+      _teams[index].votes += 1;
+      await _db.updateTeam(_teams[index]);
+      notifyListeners();
+    }
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/teamProvider.dart';
 import 'teamListScreen.dart';
+import 'leaderboardScreen.dart'; // ✅ นำเข้า Leaderboard
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,29 +11,53 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> categories = [
       {"name": "หุ่นยนต์ต่อสู้", "icon": Icons.sports_mma, "color": Colors.red},
-      {"name": "หุ่นยนต์วิ่งแข่ง", "icon": Icons.directions_run, "color": Colors.green},
-      {"name": "หุ่นยนต์ยิงเป้า", "icon": Icons.sports_esports, "color": Colors.blue},
+      {
+        "name": "หุ่นยนต์วิ่งแข่ง",
+        "icon": Icons.directions_run,
+        "color": Colors.green
+      },
+      {
+        "name": "หุ่นยนต์ยิงเป้า",
+        "icon": Icons.sports_esports,
+        "color": Colors.blue
+      },
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text("เลือกประเภทการแข่งขัน")),
+      appBar: AppBar(
+        title: const Text("เลือกประเภทการแข่งขัน"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.leaderboard),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const LeaderboardScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: categories.map((category) {
             return Card(
-              color: category["color"], // ✅ สีพื้นหลังของประเภท
+              color: category["color"],
               child: ListTile(
-                leading: Icon(category["icon"], color: Colors.white, size: 30), // ✅ ไอคอนของประเภท
-                title: Text(category["name"], style: const TextStyle(fontSize: 18, color: Colors.white)),
+                leading: Icon(category["icon"], color: Colors.white, size: 30),
+                title: Text(category["name"],
+                    style: const TextStyle(fontSize: 18, color: Colors.white)),
                 onTap: () {
                   Provider.of<TeamProvider>(context, listen: false)
-                      .loadTeams(category: category["name"]); // ✅ โหลดทีมตามประเภท
+                      .loadTeams(category: category["name"]);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TeamListScreen(category: category["name"]),
+                      builder: (context) =>
+                          TeamListScreen(category: category["name"]),
                     ),
                   );
                 },
