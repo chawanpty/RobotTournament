@@ -240,7 +240,14 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(dialogContext);
+                int newScore =
+                    int.tryParse(_scoreController.text) ?? team.score;
+                Provider.of<TeamProvider>(context, listen: false)
+                    .updateTeamData(
+                        team.keyID!, newScore, selectedRank ?? "ไม่ติดอันดับ");
+
+                Navigator.pop(dialogContext); // ปิด Dialog
+                Navigator.pop(context); // กลับไปหน้ารายชื่อทีม
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.greenAccent[700]),
