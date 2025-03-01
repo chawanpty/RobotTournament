@@ -38,7 +38,6 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
           bool isFinalized = updatedTeam.status == "จบการแข่งขัน";
 
           return SingleChildScrollView(
-            // ✅ แก้ปัญหาแถบเหลืองด้วย SingleChildScrollView
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -65,7 +64,23 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                   Text(
                       "วันที่แข่งขัน: ${updatedTeam.competitionDate ?? 'ยังไม่กำหนด'}",
                       style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 20),
+
+                  // ✅ เพิ่มอันดับและคะแนน "เฉพาะทีมที่จบการแข่งขัน"
+                  if (isFinalized) ...[
+                    const SizedBox(height: 10),
+                    Text("🏆 อันดับทีม: ${updatedTeam.rank}",
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green)),
+                    Text("⭐ คะแนนทีม: ${updatedTeam.score}",
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange)),
+                    const SizedBox(height: 20),
+                  ],
+
                   if (!isFinalized) ...[
                     TextFormField(
                       controller: _scoreController,
@@ -102,9 +117,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      if (!isFinalized ||
-                          updatedTeam.status ==
-                              "กำลังแข่งขัน") // ✅ ทีมที่กำลังแข่งขันให้กดแก้ไขได้
+                      if (!isFinalized || updatedTeam.status == "กำลังแข่งขัน")
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.push(
@@ -144,6 +157,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
+  // ✅ ฟังก์ชันบันทึกคะแนนและอันดับ
   void _showConfirmSaveDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
@@ -177,6 +191,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
+  // ✅ ฟังก์ชันลบทีม
   void _showDeleteConfirmationDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
