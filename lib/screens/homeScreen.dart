@@ -20,58 +20,86 @@ class HomeScreen extends StatelessWidget {
         "icon": Icons.sports_esports,
         "color": Colors.blue
       },
+      {"name": "หุ่นยนต์ซ่อมแซม", "icon": Icons.build, "color": Colors.orange},
     ];
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("เลือกประเภทการแข่งขัน"),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
+        title: const Text(
+          "เลือกประเภทการแข่งขัน",
+          style: TextStyle(
+              fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return GestureDetector(
-            onTap: () {
-              Provider.of<TeamProvider>(context, listen: false)
-                  .loadTeams(category: category["name"]);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      TeamListScreen(category: category["name"]),
-                ),
-              );
-            },
-            child: Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              color: category["color"],
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(category["icon"], color: Colors.white, size: 40),
-                  const SizedBox(height: 10),
-                  Text(
-                    category["name"],
-                    style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.black, Colors.blueGrey],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: categories.map((category) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: InkWell(
+                    onTap: () {
+                      Provider.of<TeamProvider>(context, listen: false)
+                          .loadTeams(category: category["name"]);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              TeamListScreen(category: category["name"]),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 20),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: category["color"],
+                        boxShadow: [
+                          BoxShadow(
+                            color: category["color"].withOpacity(0.5),
+                            blurRadius: 10,
+                            offset: const Offset(3, 5),
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(category["icon"], color: Colors.white, size: 28),
+                          const SizedBox(width: 12),
+                          Text(
+                            category["name"],
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
+                );
+              }).toList(),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

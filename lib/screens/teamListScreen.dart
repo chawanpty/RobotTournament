@@ -33,9 +33,18 @@ class _TeamListScreenState extends State<TeamListScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text("รายชื่อทีม - ${widget.category}"),
-        backgroundColor: Colors.transparent,
+        title: Text(
+          "รายชื่อทีม - ${widget.category}",
+          style: const TextStyle(
+            color: Colors.white, // ✅ ทำให้ข้อความ AppBar ชัดเจนขึ้น
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor:
+            Colors.black.withOpacity(0.8), // ✅ เพิ่มความเข้มของพื้นหลัง
         elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Colors.white), // ✅ ทำให้ไอคอน Back เป็นสีขาว
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -56,7 +65,8 @@ class _TeamListScreenState extends State<TeamListScreen> {
                     searchQuery = value.toLowerCase();
                   });
                 },
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(
+                    color: Colors.white), // ✅ สีข้อความให้ชัดเจน
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white12,
