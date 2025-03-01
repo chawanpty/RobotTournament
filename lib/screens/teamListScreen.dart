@@ -16,21 +16,14 @@ class TeamListScreen extends StatefulWidget {
 
 class _TeamListScreenState extends State<TeamListScreen> {
   String searchQuery = "";
-  String? selectedRank;
-  String selectedSort = "คะแนนสูงสุด";
-
-  void resetFilters() {
-    setState(() {
-      searchQuery = "";
-      selectedRank = null;
-      selectedSort = "คะแนนสูงสุด";
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("รายชื่อทีม - ${widget.category}")),
+      appBar: AppBar(
+        title: Text("รายชื่อทีม - ${widget.category}"),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Column(
         children: [
           Padding(
@@ -42,49 +35,10 @@ class _TeamListScreenState extends State<TeamListScreen> {
                 });
               },
               decoration: InputDecoration(
-                labelText: "ค้นหาชื่อทีม",
-                prefixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: resetFilters,
-                ),
+                labelText: "🔎 ค้นหาทีม",
                 border:
                     OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedRank,
-                    decoration: const InputDecoration(
-                      labelText: "กรองตามอันดับ",
-                      border: OutlineInputBorder(),
-                    ),
-                    items: ["1", "2", "3", "ไม่ติดอันดับ", "กำลังแข่งขัน"]
-                        .map((rank) => DropdownMenuItem(
-                            value: rank, child: Text("อันดับ: $rank")))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedRank = value;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton.icon(
-                  onPressed: resetFilters,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text("รีเซ็ต"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
             ),
           ),
           Expanded(
@@ -93,11 +47,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
                 List<TeamItem> teams = provider.teams
                     .where((team) =>
                         team.category == widget.category &&
-                        team.teamName.toLowerCase().contains(searchQuery) &&
-                        (selectedRank == null ||
-                            team.rank == selectedRank ||
-                            (selectedRank == "กำลังแข่งขัน" &&
-                                team.status == "กำลังแข่งขัน")))
+                        team.teamName.toLowerCase().contains(searchQuery))
                     .toList();
 
                 teams.sort((a, b) => b.score.compareTo(a.score));
@@ -107,37 +57,23 @@ class _TeamListScreenState extends State<TeamListScreen> {
                   itemBuilder: (context, index) {
                     final team = teams[index];
                     return Card(
-                      elevation: 2,
+                      elevation: 3,
                       margin: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       child: ListTile(
-                        title: Text("ทีม: ${team.teamName}",
+                        title: Text("⚙️ ทีม: ${team.teamName}",
                             style:
                                 const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("คะแนน: ${team.score} | อันดับ: ${team.rank}"),
-                            Text("สถานะ: ${team.status}"),
+                            Text(
+                                "🏆 อันดับ: ${team.rank} | ⭐ คะแนน: ${team.score}"),
                           ],
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.thumb_up,
-                                  color: Colors.green),
-                              onPressed: () {
-                                Provider.of<TeamProvider>(context,
-                                        listen: false)
-                                    .voteTeam(team.keyID!);
-                              },
-                            ),
-                            Text("${team.votes}"),
-                            const SizedBox(width: 10),
-                            const Icon(Icons.arrow_forward_ios),
-                          ],
-                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           Navigator.push(
                             context,

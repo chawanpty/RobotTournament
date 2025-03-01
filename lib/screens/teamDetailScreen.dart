@@ -27,7 +27,11 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("ข้อมูลทีม: ${widget.team.teamName}")),
+      appBar: AppBar(
+        title: Text("ข้อมูลทีม: ${widget.team.teamName}"),
+        backgroundColor: Colors.blueAccent,
+      ),
+      backgroundColor: Colors.black,
       body: Consumer<TeamProvider>(
         builder: (context, provider, child) {
           final updatedTeam = provider.teams.firstWhere(
@@ -43,58 +47,88 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  updatedTeam.imagePath.isNotEmpty
-                      ? Image.file(File(updatedTeam.imagePath),
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover)
-                      : const Text("ไม่มีรูปภาพ"),
+                  Hero(
+                    tag: "robot-${updatedTeam.teamName}",
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: updatedTeam.imagePath.isNotEmpty
+                          ? Image.file(File(updatedTeam.imagePath),
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover)
+                          : Image.asset("assets/robot_placeholder.png",
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover),
+                    ),
+                  ),
                   const SizedBox(height: 10),
-                  Text("ชื่อทีม: ${updatedTeam.teamName}",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text("ชื่อหุ่นยนต์: ${updatedTeam.robotName}",
-                      style: const TextStyle(fontSize: 16)),
-                  Text("ประเภท: ${updatedTeam.category}",
-                      style: const TextStyle(fontSize: 16)),
-                  Text("สมาชิกทีม: ${updatedTeam.members.join(', ')}",
-                      style: const TextStyle(fontSize: 16)),
-                  Text("สถานะ: ${updatedTeam.status}",
-                      style: const TextStyle(fontSize: 16, color: Colors.blue)),
-                  Text(
-                      "วันที่แข่งขัน: ${updatedTeam.competitionDate ?? 'ยังไม่กำหนด'}",
-                      style: const TextStyle(fontSize: 16)),
-
-                  // ✅ เพิ่มอันดับและคะแนน "เฉพาะทีมที่จบการแข่งขัน"
-                  if (isFinalized) ...[
-                    const SizedBox(height: 10),
-                    Text("🏆 อันดับทีม: ${updatedTeam.rank}",
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green)),
-                    Text("⭐ คะแนนทีม: ${updatedTeam.score}",
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange)),
-                    const SizedBox(height: 20),
-                  ],
-
+                  Card(
+                    color: Colors.blueGrey[900],
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDetailRow("🤖 ชื่อทีม:", updatedTeam.teamName),
+                          _buildDetailRow(
+                              "🛠 ชื่อหุ่นยนต์:", updatedTeam.robotName),
+                          _buildDetailRow("📌 ประเภท:", updatedTeam.category),
+                          _buildDetailRow("📅 วันที่แข่งขัน:",
+                              updatedTeam.competitionDate ?? "ยังไม่กำหนด"),
+                          _buildDetailRow("📊 สถานะ:", updatedTeam.status),
+                          if (isFinalized) ...[
+                            _buildDetailRow("🏆 อันดับทีม:", updatedTeam.rank),
+                            _buildDetailRow(
+                                "⭐ คะแนนทีม:", updatedTeam.score.toString()),
+                          ],
+                          const SizedBox(height: 10),
+                          Text(
+                            "สมาชิกทีม",
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.cyanAccent),
+                          ),
+                          ...updatedTeam.members.map((member) => Text(
+                              "👤 $member",
+                              style: const TextStyle(
+                                  fontSize: 16, color: Colors.white))),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   if (!isFinalized) ...[
                     TextFormField(
                       controller: _scoreController,
-                      decoration: const InputDecoration(labelText: "คะแนนทีม"),
+                      decoration: const InputDecoration(
+                        labelText: "คะแนนทีม",
+                        filled: true,
+                        fillColor: Colors.white10,
+                        border: OutlineInputBorder(),
+                      ),
                       keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
                     ),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: selectedRank,
-                      decoration:
-                          const InputDecoration(labelText: "จัดอันดับทีม"),
+                      dropdownColor: Colors.blueGrey[900],
+                      decoration: const InputDecoration(
+                        labelText: "จัดอันดับทีม",
+                        filled: true,
+                        fillColor: Colors.white10,
+                        border: OutlineInputBorder(),
+                      ),
                       items: ["1", "2", "3", "ไม่ติดอันดับ"].map((rank) {
                         return DropdownMenuItem<String>(
                           value: rank,
-                          child: Text("อันดับ: $rank"),
+                          child: Text("อันดับ: $rank",
+                              style: const TextStyle(color: Colors.white)),
                         );
                       }).toList(),
                       onChanged: (String? newRank) {
@@ -157,7 +191,29 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ ฟังก์ชันบันทึกคะแนนและอันดับ
+  // ✅ ฟังก์ชันสร้างแถวข้อมูล
+  Widget _buildDetailRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.cyanAccent)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(value,
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+                overflow: TextOverflow.ellipsis),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ ฟังก์ชันยืนยันการบันทึก
   void _showConfirmSaveDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
@@ -180,7 +236,6 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                 Provider.of<TeamProvider>(context, listen: false)
                     .updateTeamData(
                         team.keyID!, newScore, selectedRank ?? "ไม่ติดอันดับ");
-
                 Navigator.pop(dialogContext);
                 Navigator.pop(context);
               },
@@ -191,7 +246,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ ฟังก์ชันลบทีม
+  // ✅ ฟังก์ชันลบทีม (เพิ่มให้สมบูรณ์)
   void _showDeleteConfirmationDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,

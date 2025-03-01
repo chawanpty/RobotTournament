@@ -4,6 +4,7 @@ import '../provider/teamProvider.dart';
 import '../model/teamItem.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditTeamScreen extends StatefulWidget {
   final TeamItem team;
@@ -39,11 +40,20 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
       _image = File(widget.team.imagePath);
     }
 
-    // ✅ ตรวจสอบว่ามีวันที่แข่งขันหรือไม่
     if (widget.team.competitionDate != null &&
         widget.team.competitionDate!.isNotEmpty) {
       _selectedDate =
           DateFormat('dd/MM/yyyy').parse(widget.team.competitionDate!);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
     }
   }
 
@@ -105,9 +115,9 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
         members: members,
         competitionDate: _selectedDate != null
             ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
-            : widget.team
-                .competitionDate, // ✅ เก็บวันที่แข่งขันเดิมถ้าไม่ได้เปลี่ยน
-        imagePath: _image?.path ?? widget.team.imagePath,
+            : widget.team.competitionDate,
+        imagePath: _image?.path ??
+            widget.team.imagePath, // ✅ อัปเดตให้แน่ใจว่า imagePath ไม่เป็น null
       );
 
       Provider.of<TeamProvider>(context, listen: false).updateTeam(updatedTeam);
@@ -119,7 +129,11 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: const Text("แก้ไขข้อมูลทีม")),
+      backgroundColor: Colors.black, // 🎨 พื้นหลัง Sci-Fi
+      appBar: AppBar(
+        title: const Text("แก้ไขข้อมูลทีม"),
+        backgroundColor: Colors.orangeAccent,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -129,59 +143,93 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: _image != null
-                      ? Image.file(_image!, height: 150, fit: BoxFit.cover)
-                      : const Text("ไม่มีรูปภาพ"),
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _teamNameController,
-                  decoration: const InputDecoration(labelText: "ชื่อทีม"),
-                  validator: (value) =>
-                      value!.isEmpty ? "กรุณากรอกชื่อทีม" : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _robotNameController,
-                  decoration: const InputDecoration(labelText: "ชื่อหุ่นยนต์"),
-                  validator: (value) =>
-                      value!.isEmpty ? "กรุณากรอกชื่อหุ่นยนต์" : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _member1Controller,
-                  decoration: const InputDecoration(labelText: "สมาชิก 1"),
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _member2Controller,
-                  decoration: const InputDecoration(labelText: "สมาชิก 2"),
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _member3Controller,
-                  decoration: const InputDecoration(labelText: "สมาชิก 3"),
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: _pickDate,
-                  child: Text(
-                    _selectedDate == null
-                        ? "เลือกวันที่แข่งขัน"
-                        : "วันที่แข่งขัน: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}",
+                  child: Column(
+                    children: [
+                      _image != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image.file(_image!,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover),
+                            )
+                          : const Text("ไม่มีรูปภาพ",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16)),
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: _pickImage,
+                        child: const Text(
+                          "📸 เลือกรูปใหม่",
+                          style: TextStyle(
+                              color: Colors.orangeAccent,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
+                _buildTextField(_teamNameController, "ชื่อทีม"),
+                _buildTextField(_robotNameController, "ชื่อหุ่นยนต์"),
+                _buildTextField(_member1Controller, "สมาชิก 1"),
+                _buildTextField(_member2Controller, "สมาชิก 2"),
+                _buildTextField(_member3Controller, "สมาชิก 3"),
+                const SizedBox(height: 20),
+                Center(
+                  child: TextButton(
+                    onPressed: _pickDate,
+                    child: Text(
+                      _selectedDate == null
+                          ? "📅 เลือกวันที่แข่งขัน"
+                          : "📅 วันที่แข่งขัน: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}",
+                      style: const TextStyle(
+                          color: Colors.purpleAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
                 Center(
                   child: ElevatedButton(
                     onPressed: _showConfirmationDialog,
-                    child: const Text("บันทึก"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orangeAccent,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
+                    ),
+                    child: const Text(
+                      "บันทึก",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          filled: true,
+          fillColor: Colors.white10,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        validator: (value) => value!.isEmpty ? "กรุณากรอกข้อมูล $label" : null,
       ),
     );
   }

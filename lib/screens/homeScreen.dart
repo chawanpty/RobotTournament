@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/teamProvider.dart';
 import 'teamListScreen.dart';
-import 'welcomeScreen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -26,42 +25,53 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("เลือกประเภทการแข่งขัน"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-            );
-          },
-        ),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: categories.map((category) {
-            return Card(
-              color: category["color"],
-              child: ListTile(
-                leading: Icon(category["icon"], color: Colors.white, size: 30),
-                title: Text(category["name"],
-                    style: const TextStyle(fontSize: 18, color: Colors.white)),
-                onTap: () {
-                  Provider.of<TeamProvider>(context, listen: false)
-                      .loadTeams(category: category["name"]);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          TeamListScreen(category: category["name"]),
-                    ),
-                  );
-                },
-              ),
-            );
-          }).toList(),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
         ),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          return GestureDetector(
+            onTap: () {
+              Provider.of<TeamProvider>(context, listen: false)
+                  .loadTeams(category: category["name"]);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      TeamListScreen(category: category["name"]),
+                ),
+              );
+            },
+            child: Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              color: category["color"],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(category["icon"], color: Colors.white, size: 40),
+                  const SizedBox(height: 10),
+                  Text(
+                    category["name"],
+                    style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
