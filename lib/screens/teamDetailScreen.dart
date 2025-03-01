@@ -29,7 +29,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("ข้อมูลทีม: ${widget.team.teamName}"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.orangeAccent,
       ),
       backgroundColor: Colors.black,
       body: Consumer<TeamProvider>(
@@ -66,7 +66,8 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                   Card(
                     color: Colors.blueGrey[900],
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 5,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -80,11 +81,6 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                           _buildDetailRow("📅 วันที่แข่งขัน:",
                               updatedTeam.competitionDate ?? "ยังไม่กำหนด"),
                           _buildDetailRow("📊 สถานะ:", updatedTeam.status),
-                          if (isFinalized) ...[
-                            _buildDetailRow("🏆 อันดับทีม:", updatedTeam.rank),
-                            _buildDetailRow(
-                                "⭐ คะแนนทีม:", updatedTeam.score.toString()),
-                          ],
                           const SizedBox(height: 10),
                           Text(
                             "สมาชิกทีม",
@@ -138,13 +134,23 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
-                  ],
-                  if (!isFinalized) ...[
-                    ElevatedButton(
-                      onPressed: () {
-                        _showConfirmSaveDialog(context, updatedTeam);
-                      },
-                      child: const Text("บันทึกข้อมูล"),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          _showConfirmSaveDialog(context, updatedTeam);
+                        },
+                        icon: const Icon(Icons.save, color: Colors.white),
+                        label: const Text("บันทึก"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orangeAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 15),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 10),
                   ],
@@ -191,7 +197,6 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ ฟังก์ชันสร้างแถวข้อมูล
   Widget _buildDetailRow(String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -213,32 +218,33 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ ฟังก์ชันยืนยันการบันทึก
   void _showConfirmSaveDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("ยืนยันการบันทึก"),
-          content: const Text("คุณต้องการบันทึกข้อมูลนี้หรือไม่?"),
+          backgroundColor: Colors.blueGrey[900],
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text("ยืนยันการบันทึก",
+              style: TextStyle(color: Colors.white)),
+          content: const Text("คุณต้องการบันทึกข้อมูลนี้หรือไม่?",
+              style: TextStyle(color: Colors.white70)),
           actions: [
             TextButton(
-              child: const Text("ยกเลิก"),
+              child: const Text("ยกเลิก",
+                  style: TextStyle(color: Colors.redAccent)),
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
             ),
-            TextButton(
-              child: const Text("ยืนยัน"),
+            ElevatedButton(
               onPressed: () {
-                int newScore =
-                    int.tryParse(_scoreController.text) ?? team.score;
-                Provider.of<TeamProvider>(context, listen: false)
-                    .updateTeamData(
-                        team.keyID!, newScore, selectedRank ?? "ไม่ติดอันดับ");
                 Navigator.pop(dialogContext);
-                Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent[700]),
+              child: const Text("ยืนยัน"),
             ),
           ],
         );
@@ -246,7 +252,6 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ ฟังก์ชันลบทีม (เพิ่มให้สมบูรณ์)
   void _showDeleteConfirmationDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,

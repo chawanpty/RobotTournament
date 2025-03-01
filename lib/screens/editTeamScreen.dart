@@ -77,21 +77,42 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("ยืนยันการแก้ไข"),
-          content: const Text("คุณต้องการบันทึกการแก้ไขหรือไม่?"),
+          backgroundColor: Colors.blueGrey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: const [
+              Icon(Icons.warning_amber_rounded, color: Colors.yellowAccent),
+              SizedBox(width: 10),
+              Text("ยืนยันการแก้ไข", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+          content: const Text(
+            "คุณต้องการบันทึกการแก้ไขหรือไม่?",
+            style: TextStyle(color: Colors.white70),
+          ),
           actions: [
             TextButton(
-              child: const Text("ยกเลิก"),
+              child: const Text("ยกเลิก",
+                  style: TextStyle(color: Colors.redAccent)),
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
             ),
-            TextButton(
-              child: const Text("ยืนยัน"),
+            ElevatedButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
                 _saveEdit();
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.greenAccent[700],
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: const Text("ยืนยัน"),
             ),
           ],
         );
@@ -116,8 +137,7 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
         competitionDate: _selectedDate != null
             ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
             : widget.team.competitionDate,
-        imagePath: _image?.path ??
-            widget.team.imagePath, // ✅ อัปเดตให้แน่ใจว่า imagePath ไม่เป็น null
+        imagePath: _image?.path ?? widget.team.imagePath,
       );
 
       Provider.of<TeamProvider>(context, listen: false).updateTeam(updatedTeam);
@@ -129,7 +149,7 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.black, // 🎨 พื้นหลัง Sci-Fi
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text("แก้ไขข้อมูลทีม"),
         backgroundColor: Colors.orangeAccent,
@@ -193,16 +213,21 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
                 ),
                 const SizedBox(height: 30),
                 Center(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _showConfirmationDialog,
+                    icon: const Icon(Icons.save, color: Colors.white),
+                    label: const Text(
+                      "บันทึก",
+                      style: TextStyle(fontSize: 18),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 15),
-                    ),
-                    child: const Text(
-                      "บันทึก",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                          horizontal: 50, vertical: 15),
                     ),
                   ),
                 ),
