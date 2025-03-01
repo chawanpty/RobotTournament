@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Robot Tournament',
         theme: ThemeData(
+          fontFamily: 'Prompt',
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
