@@ -28,24 +28,27 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("ข้อมูลทีม: ${widget.team.teamName}")),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Consumer<TeamProvider>(
-            builder: (context, provider, child) {
-              final updatedTeam = provider.teams.firstWhere(
-                (t) => t.keyID == widget.team.keyID,
-                orElse: () => widget.team,
-              );
+      body: Consumer<TeamProvider>(
+        builder: (context, provider, child) {
+          final updatedTeam = provider.teams.firstWhere(
+            (t) => t.keyID == widget.team.keyID,
+            orElse: () => widget.team,
+          );
 
-              bool isFinalized =
-                  updatedTeam.status == "จบการแข่งขัน"; // ✅ ตรวจสอบสถานะทีม
+          bool isFinalized = updatedTeam.status == "จบการแข่งขัน";
 
-              return Column(
+          return SingleChildScrollView(
+            // ✅ แก้ปัญหาแถบเหลืองด้วย SingleChildScrollView
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   updatedTeam.imagePath.isNotEmpty
-                      ? Image.file(File(updatedTeam.imagePath), height: 150)
+                      ? Image.file(File(updatedTeam.imagePath),
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover)
                       : const Text("ไม่มีรูปภาพ"),
                   const SizedBox(height: 10),
                   Text("ชื่อทีม: ${updatedTeam.teamName}",
@@ -62,10 +65,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                   Text(
                       "วันที่แข่งขัน: ${updatedTeam.competitionDate ?? 'ยังไม่กำหนด'}",
                       style: const TextStyle(fontSize: 16)),
-
                   const SizedBox(height: 20),
-
-                  // ✅ หากสถานะเป็น "กำลังแข่งขัน" ให้กรอกคะแนนและเลือกอันดับได้
                   if (!isFinalized) ...[
                     TextFormField(
                       controller: _scoreController,
@@ -89,51 +89,61 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
-
-                    // ✅ ปุ่มบันทึกข้อมูล (เฉพาะทีมที่ยังแข่งขันอยู่)
+                  ],
+                  if (!isFinalized) ...[
                     ElevatedButton(
                       onPressed: () {
                         _showConfirmSaveDialog(context, updatedTeam);
                       },
                       child: const Text("บันทึกข้อมูล"),
                     ),
+                    const SizedBox(height: 10),
                   ],
-
-                  const SizedBox(height: 20),
-
-                  // ✅ ปุ่มแก้ไข (เฉพาะทีมที่ยังแข่งขันอยู่)
-                  if (!isFinalized)
-                    IconButton(
-                      icon: const Icon(Icons.edit,
-                          color: Colors.yellow, size: 30),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EditTeamScreen(team: updatedTeam),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      if (!isFinalized ||
+                          updatedTeam.status ==
+                              "กำลังแข่งขัน") // ✅ ทีมที่กำลังแข่งขันให้กดแก้ไขได้
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditTeamScreen(team: updatedTeam),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit, color: Colors.white),
+                          label: const Text("แก้ไข"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.yellow[700],
+                            foregroundColor: Colors.black,
                           ),
-                        );
-                      },
-                    ),
-
-                  // ✅ ปุ่มลบ (ยังคงอยู่แม้สถานะเป็น "จบการแข่งขัน")
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red, size: 30),
-                    onPressed: () {
-                      _showDeleteConfirmationDialog(context, updatedTeam);
-                    },
+                        ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(context, updatedTeam);
+                        },
+                        icon: const Icon(Icons.delete, color: Colors.white),
+                        label: const Text("ลบ"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  // ✅ ฟังก์ชันแสดง Pop-up ยืนยันการบันทึก
   void _showConfirmSaveDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
@@ -167,13 +177,12 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
     );
   }
 
-  // ✅ ฟังก์ชันแสดง Pop-up ยืนยันก่อนลบทีม
   void _showDeleteConfirmationDialog(BuildContext context, TeamItem team) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("ยืนยันการลบ"),
+          title: const Text("ยืนยันการลบทีม"),
           content: const Text("คุณต้องการลบทีมนี้หรือไม่?"),
           actions: [
             TextButton(

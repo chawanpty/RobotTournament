@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 import '../provider/teamProvider.dart';
 import '../model/teamItem.dart';
 import 'dart:io';
-// import 'package:image_picker/image_picker.dart';
-// import 'package:intl/intl.dart';
 
 class EditTeamScreen extends StatefulWidget {
   final TeamItem team;
@@ -93,37 +91,61 @@ class _EditTeamScreenState extends State<EditTeamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset:
+          true, // ✅ ปรับ UI ให้ไม่เกิด Overflow เมื่อคีย์บอร์ดขึ้น
       appBar: AppBar(title: const Text("แก้ไขข้อมูลทีม")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _image != null
-                  ? Image.file(_image!, height: 150, fit: BoxFit.cover)
-                  : const Text("ไม่มีรูปภาพ"),
-              TextFormField(
+      body: SingleChildScrollView(
+        // ✅ ทำให้สามารถเลื่อนขึ้นลงได้
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: _image != null
+                      ? Image.file(_image!, height: 150, fit: BoxFit.cover)
+                      : const Text("ไม่มีรูปภาพ"),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
                   controller: _teamNameController,
-                  decoration: const InputDecoration(labelText: "ชื่อทีม")),
-              TextFormField(
+                  decoration: const InputDecoration(labelText: "ชื่อทีม"),
+                  validator: (value) =>
+                      value!.isEmpty ? "กรุณากรอกชื่อทีม" : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
                   controller: _robotNameController,
-                  decoration: const InputDecoration(labelText: "ชื่อหุ่นยนต์")),
-              TextFormField(
+                  decoration: const InputDecoration(labelText: "ชื่อหุ่นยนต์"),
+                  validator: (value) =>
+                      value!.isEmpty ? "กรุณากรอกชื่อหุ่นยนต์" : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
                   controller: _member1Controller,
-                  decoration: const InputDecoration(labelText: "สมาชิก 1")),
-              TextFormField(
+                  decoration: const InputDecoration(labelText: "สมาชิก 1"),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
                   controller: _member2Controller,
-                  decoration: const InputDecoration(labelText: "สมาชิก 2")),
-              TextFormField(
+                  decoration: const InputDecoration(labelText: "สมาชิก 2"),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
                   controller: _member3Controller,
-                  decoration: const InputDecoration(labelText: "สมาชิก 3")),
-
-              // ✅ กดปุ่มแล้วให้แสดง Pop-up ยืนยันก่อนบันทึก
-              ElevatedButton(
-                  onPressed: _showConfirmationDialog,
-                  child: const Text("บันทึก")),
-            ],
+                  decoration: const InputDecoration(labelText: "สมาชิก 3"),
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _showConfirmationDialog,
+                    child: const Text("บันทึก"),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
