@@ -264,23 +264,47 @@ class _TeamDetailScreenState extends State<TeamDetailScreen> {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("ยืนยันการลบทีม"),
-          content: const Text("คุณต้องการลบทีมนี้หรือไม่?"),
+          backgroundColor:
+              Colors.blueGrey[900], // ✅ เปลี่ยนสีพื้นหลังให้เข้ากับธีม
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: const [
+              Icon(Icons.warning_amber_rounded, color: Colors.yellowAccent),
+              SizedBox(width: 10),
+              Text("ยืนยันการลบทีม", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+          content: const Text(
+            "คุณต้องการลบทีมนี้หรือไม่?\nการลบทีมจะไม่สามารถกู้คืนได้!",
+            style: TextStyle(color: Colors.white70),
+          ),
           actions: [
             TextButton(
-              child: const Text("ยกเลิก"),
+              child: const Text("ยกเลิก",
+                  style: TextStyle(color: Colors.redAccent, fontSize: 16)),
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
             ),
-            TextButton(
-              child: const Text("ลบ"),
+            ElevatedButton(
               onPressed: () {
                 Provider.of<TeamProvider>(context, listen: false)
                     .deleteTeam(team.keyID!);
                 Navigator.pop(dialogContext);
                 Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: const Text("ลบ", style: TextStyle(fontSize: 16)),
             ),
           ],
         );

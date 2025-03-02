@@ -70,7 +70,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white12,
-                  hintText: "🔍 ค้นหาชื่อทีม",
+                  hintText: "ค้นหาชื่อทีม",
                   hintStyle: const TextStyle(color: Colors.white70),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
